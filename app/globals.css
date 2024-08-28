@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
+  --highlight-rgb: 155, 175, 245;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  fill: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+}
+
+main > div {
+  @apply h-full flex-1 overflow-y-scroll;
+}
+
+table > thead > tr > th > div > :first-child {
+  @apply text-nowrap min-w-20
+}
+
+form > div > input, form > div > select, form > div > textarea {
+  @apply flex w-full border border-slate-300 rounded-md shadow-sm px-3 py-1 focus-visible:outline-none focus-visible:ring-1 text-sm;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @db.VarChar(36)
+  email        String     @unique(map: "users_unique_1") @db.VarChar(100)
+  username     String     @unique(map: "users_unique") @db.VarChar(32)
+  password     String     @db.VarChar(100)
+  age          Int?
+  gender       String?    @db.VarChar(1)
+  role         String     @default("user") @db.VarChar(36)
+  balance      Float      @default(0.00)
+  couponPoints Int        @default(0) @map("coupon_points")
+  createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  deletedAt    DateTime?  @map("deleted_at") @db.DateTime(0)
+  coupons      Coupon[]
+  orders       Order[]
+  topups       Topup[]
+  enquiries    Enquiry[]
+  Booking      Booking[]
+  TaskAssigner Task[]     @relation(name: "assigner")
+  TaskAssignee Task[]     @relation(name: "assignee")
+  Activity     Activity[]
+
+  @@map("users")
+}
+
+model Coupon {
+  id               String         @id @db.VarChar(36)
+  userId           String         @map("user_id") @db.VarChar(36)
+  couponCategoryId String         @map("coupon_categories_id") @db.VarChar(36)
+  createdAt        DateTime       @default(now()) @map("created_at") @db.DateTime(0)
+  usedAt           DateTime?      @map("used_at") @db.DateTime(0)
+  couponCategory   CouponCategory @relation(fields: [couponCategoryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coupons_coupon_categories_FK")
+  user             User           @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coupons_users_FK")
+  Order            Order[]
+
+  @@index([couponCategoryId], map: "coupons_coupon_categories_FK")
+  @@index([userId], map: "coupons_users_FK")
+  @@map("coupons")
+}
+
+model Category {
+  id        String    @id @db.VarChar(36)
+  name      String    @db.VarChar(30)
+  discount  Float     @default(0.00)
+  createdAt DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  deletedAt DateTime? @map("deleted_at") @db.DateTime(0)
+  products  Product[]
+
+  @@map("categories")
+}
+
+model CouponCategory {
+  id          String    @id @db.VarChar(36)
+  name        String?   @db.VarChar(20)
+  description String?   @db.VarChar(255)
+  imagePath   String?   @map("image_path") @db.VarChar(255)
+  point       Int
+  value       Float
+  stock       Int       @default(0)
+  active      Boolean   @default(false)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  deletedAt   DateTime? @map("deleted_at") @db.DateTime(0)
+  coupons     Coupon[]
+
+  @@map("coupon_categories")
+}
+
+model Enquiry {
+  id        String   @id @db.VarChar(36)
+  email     String   @db.VarChar(100)
+  content   String   @db.Text
+  done      Boolean  @default(false)
+  userId    String?  @map("user_id") @db.VarChar(36)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "enquiries_users_FK")
+
+  @@map("enquiries")
+}
+
+model OrderItem {
+  id        String   @id @db.VarChar(36)
+  orderId   String   @map("order_id") @db.VarChar(36)
+  productId String   @map("product_id") @db.VarChar(36)
+  quantity  Int
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_items_orders_FK")
+  product   Product  @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_items_products_FK")
+
+  @@index([productId], map: "order_items_products_FK")
+  @@map("order_items")
+}
+
+model Order {
+  id              String      @id @db.VarChar(36)
+  userId          String      @map("user_id") @db.VarChar(36)
+  totalPrice      Float       @map("total_price")
+  couponId        String?     @map("coupon_id") @db.VarChar(36)
+  paymentId       String?     @map("payment_id") @db.VarChar(36)
+  receiverName    String?     @map("receiver_name") @db.VarChar(100)
+  receiverAddress String?     @map("receiver_address") @db.VarChar(255)
+  state           String      @default("pending") @db.VarChar(20)
+  createdAt       DateTime    @default(now()) @map("created_at") @db.DateTime(0)
+  deletedAt       DateTime?   @map("deleted_at") @db.DateTime(0)
+  user            User        @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_users_FK")
+  coupon          Coupon?     @relation(fields: [couponId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_coupons_FK")
+  topup           Topup?      @relation(fields: [paymentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_topups_FK")
+  orderItem       OrderItem[]
+
+  @@index([userId], map: "orders_users_FK")
+  @@map("orders")
+}
+
+model Product {
+  id          String      @id @db.VarChar(36)
+  categoryId  String      @map("categories_id") @db.VarChar(36)
+  name        String      @db.VarChar(100)
+  description String?     @db.VarChar(255)
+  image       String?     @db.VarChar(255)
+  price       Float
+  stock       Int         @default(0)
+  discount    Float       @default(0.00)
+  couponPoint Int         @map("coupon_point")
+  createdAt   DateTime    @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  deletedAt   DateTime?   @map("deleted_at") @db.DateTime(0)
+  orderItems  OrderItem[]
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "products_categories_FK")
+
+  @@index([categoryId], map: "products_categories_FK")
+  @@map("products")
+}
+
+model Topup {
+  id        String   @id @db.VarChar(36)
+  userId    String   @map("user_id") @db.VarChar(36)
+  amount    Float
+  imagePath String   @map("image_path") @db.VarChar(100)
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+  users     User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "topups_users_FK")
+  Order     Order[]
+
+  @@index([userId], map: "topups_users_FK")
+  @@map("topups")
+}
+
+model WebsiteContent {
+  id        String   @id @db.VarChar(36)
+  key       String   @unique(map: "website_key_unique") @db.VarChar(20)
+  content   String   @db.Text
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.DateTime(0)
+
+  @@map("website_contents")
+}
+
+model Booking {
+  id        String   @id @db.VarChar(36)
+  userId    String   @map("user_id") @db.VarChar(36)
+  venue     String   @db.VarChar(100)
+  date      DateTime @db.DateTime(0)
+  time      DateTime @db.DateTime(0)
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  users     User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "bookings_users_FK")
+
+  @@map("bookings")
+}
+
+model Activity {
+  id         String   @id @db.VarChar(36)
+  creatorId  String   @map("creator_id") @db.VarChar(36)
+  title      String   @db.VarChar(100)
+  attendance Boolean  @default(false)
+  start      DateTime @db.Time(0)
+  end        DateTime @db.Time(0)
+  date       String   @db.VarChar(20)
+  approved   Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  creator    User     @relation(fields: [creatorId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "activities_users_FK")
+
+  @@map("activities")
+}
+
+model Task {
+  id           String    @id @db.VarChar(36)
+  assignerId   String?   @map("assigner_id") @db.VarChar(36)
+  assigneeId   String?   @map("assignee_id") @db.VarChar(36)
+  state        String    @default("TODO") @db.VarChar(20)
+  title        String    @db.VarChar(100)
+  description  String?   @db.VarChar(1000)
+  deadline     DateTime? @db.DateTime(0)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  deletedAt    DateTime? @map("deleted_at") @db.DateTime(0)
+  assignerUser User?     @relation(name: "assigner", fields: [assignerId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tasks_users_FK_1")
+  assigneeUser User?     @relation(name: "assignee", fields: [assigneeId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tasks_users_FK")
+
+  @@map("tasks")
+}
+
+model Opportunity {
+  id                String   @id @db.VarChar(36)
+  title             String   @db.VarChar(100)
+  priority          Int      @db.Int
+  contactNo         String?  @map("contact_no") @db.VarChar(20)
+  contactName       String?  @map("contact_name") @db.VarChar(100)
+  state             String   @default("OPEN") @db.VarChar(20)
+  opportunityAmount Float?   @map("opportunity_amount")
+  createdAt         DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@map("opportunities")
+}
+
+model Deal {
+  id          String   @id @db.VarChar(36)
+  title       String   @db.VarChar(100)
+  contactNo   String?  @map("contact_no") @db.VarChar(20)
+  contactName String?  @map("contact_name") @db.VarChar(100)
+  state       String   @default("OPEN") @db.VarChar(20)
+  dealAmount  Float?   @map("deal_amount")
+  createdAt   DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@map("deals")
+}
