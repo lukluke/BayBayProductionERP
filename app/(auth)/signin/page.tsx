@@ -34,7 +34,7 @@ function PageContent() {
         onSubmit={(e) => handleSignIn(e)}
       >
         <h2 className="text-2xl font-semibold text-gray-800">
-          Membership Dashboard
+          Login Dashboard
         </h2>
         <label className="border-2 border-gray-100 flex items-center gap-2 bg-gray-100">
           <svg
