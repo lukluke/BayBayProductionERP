@@ -53,6 +53,10 @@ export default function Form({
           <input id="name" name="name" type="text" />
         </div>
         <div>
+          <label htmlFor="description">描述</label>
+          <textarea id="description" name="description" />
+        </div>
+        <div>
           <label htmlFor="price">價格</label>
           <input id="price" name="price" type="number" step="0.01" />
         </div>
