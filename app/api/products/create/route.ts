@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
     const formData = {
       categoryId: rawFormData.get("categoryId"),
       name: rawFormData.get("name"),
+      description: rawFormData.get("description"),
       price: rawFormData.get("price"),
       discount: rawFormData.get("discount"),
       couponPoint: rawFormData.get("couponPoint"),
@@ -25,6 +26,7 @@ export async function POST(request: NextRequest) {
     if (
       !formData.categoryId ||
       !formData.name ||
+      !formData.description ||
       !formData.price ||
       !formData.discount ||
       !formData.couponPoint
@@ -37,6 +39,7 @@ export async function POST(request: NextRequest) {
         id: uuid(),
         categoryId: formData.categoryId as string,
         name: formData.name as string,
+        description: formData.description as string,
         price: parseFloat(formData.price as string),
         discount: parseFloat(formData.discount as string),
         couponPoint: parseInt(formData.couponPoint as string),

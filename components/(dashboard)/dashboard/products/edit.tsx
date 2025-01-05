@@ -85,6 +85,10 @@ export default function Form({
           />
         </div>
         <div>
+          <label htmlFor="description">描述</label>
+          <textarea id="description" name="description" />
+        </div>
+        <div>
           <label htmlFor="price">價格</label>
           <input
             id="price"
