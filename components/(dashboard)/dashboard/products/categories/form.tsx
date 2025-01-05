@@ -37,6 +37,10 @@ export default function Form() {
           <input id="name" name="name" type="text" />
         </div>
         <div>
+          <label htmlFor="description">Description</label>
+          <textarea id="description" name="description" />
+        </div>
+        <div>
           <label htmlFor="discount">Discount</label>
           <input id="discount" name="discount" type="number" step="0.01" />
         </div>
